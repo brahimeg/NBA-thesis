@@ -11,6 +11,10 @@ import os
 import glob
 import datetime
 from datetime import timedelta
+import sklearn as sk
+from sklearn.linear_model import LinearRegression as LR
+from sklearn.linear_model import LogisticRegression as LogR
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score
 
 #gather all game results sorted by date
 def upload_data():
@@ -52,7 +56,7 @@ def process_gamedata():
             print(i)
             temp['start_time'][i] = datetime.datetime.strptime(temp['start_time'][i][0:16], '%Y-%m-%d %H:%M')
             temp['start_time'][i] = temp['start_time'][i] - timedelta(hours = 4)
-            date = temp['start_time'][i].year
+
             temp['players'][i] = {}
             if (counter == 0):
                 for x in player_stats['2015'].keys():
@@ -77,11 +81,6 @@ def process_gamedata():
     all_data = all_data.loc[:, ~all_data.columns.str.contains('^Unnamed')]
     
     return all_data
-
-
-
-merged_data = process_gamedata()
-#merged_data.to_json('./merged_data.json') 
 
 
 
@@ -112,12 +111,60 @@ def process_playerdata():
     return player_stats
 
 
+def unique_players():
+    merged_data = pd.read_json(r'./merged_data.json')
+    
+    uniq_players = {None}
+    set(uniq_players)
+    for i in range(len(merged_data)):
+        for x in merged_data['players'][i].keys():
+            uniq_players.add(x)
+    
+    return uniq_players
 
 
 
-
-
+def test():
+    merged_data = pd.read_json(r'./merged_data.json')
+    uniq_players = unique_players()
+    return merged_data, uniq_players
 
 
 if __name__ == "__main__":
-    print('class')
+    merged_data, uniq_players = test()
+    merged_data['player_array'] = None
+    merged_data['win'] = None
+    for i in range(len(merged_data)):
+        print(i)
+        if merged_data['home_team_score'][i] > merged_data['away_team_score'][i]:
+            merged_data['win'][i] = 1
+        else:
+            merged_data['win'][i] = 0
+        temp = {}
+        for x in uniq_players:
+            temp[x] = 0
+            for y in merged_data['players'][i].keys():
+                if y == x:
+                    temp[x] = 1
+        merged_data['player_array'][i] = np.array(list(temp.values()))
+    
+merged_data = merged_data.sample(frac=1).reset_index(drop=True)
+
+   
+train_x = np.array(list(merged_data['player_array']))
+train_y = np.array(list(merged_data['win'])).reshape(5248,1)
+ 
+# Create Logistic regression object
+regr = LogR()
+
+# Train the model using the training sets
+regr.fit(train_x, train_y)
+
+# Make predictions using the testing set
+y_pred = regr.predict(train_x)
+
+
+print('accuracy_score:', accuracy_score(train_y, y_pred))    
+
+    
+    
