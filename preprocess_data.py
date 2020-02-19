@@ -20,11 +20,13 @@ from sklearn.neural_network import MLPClassifier
 
 #gather all game results sorted by date
 def upload_data():
-    client.season_schedule(season_end_year=2015, output_type=OutputType.CSV,  output_file_path = './game_results_2014_2015.csv')
-    client.season_schedule(season_end_year=2016, output_type=OutputType.CSV,  output_file_path = './game_results_2015_2016.csv')
-    client.season_schedule(season_end_year=2017, output_type=OutputType.CSV,  output_file_path = './game_results_2016_2017.csv')
-    client.season_schedule(season_end_year=2018, output_type=OutputType.CSV,  output_file_path = './game_results_2017_2018.csv')
+    client.season_schedule(season_end_year=2014, output_type=OutputType.CSV,  output_file_path = './data/game_results_2013_2014.csv')
+    client.season_schedule(season_end_year=2015, output_type=OutputType.CSV,  output_file_path = './data/game_results_2014_2015.csv')
+    client.season_schedule(season_end_year=2016, output_type=OutputType.CSV,  output_file_path = './data/game_results_2015_2016.csv')
+    client.season_schedule(season_end_year=2017, output_type=OutputType.CSV,  output_file_path = './data/game_results_2016_2017.csv')
+    client.season_schedule(season_end_year=2018, output_type=OutputType.CSV,  output_file_path = './data/game_results_2017_2018.csv')
     
+    client.players_season_totals(season_end_year=2013, output_type=OutputType.JSON,  output_file_path = './player_stats_2012_2013.json')
     client.players_season_totals(season_end_year=2014, output_type=OutputType.JSON,  output_file_path = './player_stats_2013_2014.json')
     client.players_season_totals(season_end_year=2015, output_type=OutputType.JSON,  output_file_path = './player_stats_2014_2015.json')
     client.players_season_totals(season_end_year=2016, output_type=OutputType.JSON,  output_file_path = './player_stats_2015_2016.json')    
@@ -62,27 +64,34 @@ def process_gamedata():
 
             temp['players'][i] = {}
             if (counter == 0):
+                for x in player_stats['2014'].keys():
+                    if temp['home_team'][i] == player_stats['2014'][x]['team'] or temp['away_team'][i] == player_stats['2014'][x]['team']:
+                        try:
+                            temp['players'][i][x] = player_stats['2013'][x]
+                        except KeyError:
+                            temp['players'][i][x] = pd.Series({'team': player_stats['2014'][x]['team']})
+            elif (counter == 1):
                 for x in player_stats['2015'].keys():
                     if temp['home_team'][i] == player_stats['2015'][x]['team'] or temp['away_team'][i] == player_stats['2015'][x]['team']:
                         try:
                             temp['players'][i][x] = player_stats['2014'][x]
                         except KeyError:
                             temp['players'][i][x] = pd.Series({'team': player_stats['2015'][x]['team']})                
-            elif (counter == 1):
+            elif (counter == 2):
                 for x in player_stats['2016'].keys():
                     if temp['home_team'][i] == player_stats['2016'][x]['team'] or temp['away_team'][i] == player_stats['2016'][x]['team']:
                         try:
                             temp['players'][i][x] = player_stats['2015'][x]
                         except KeyError:
                             temp['players'][i][x] = pd.Series({'team' : player_stats['2016'][x]['team']})
-            elif (counter == 2):
+            elif (counter == 3):
                 for x in player_stats['2017'].keys():
                     if temp['home_team'][i] == player_stats['2017'][x]['team'] or temp['away_team'][i] == player_stats['2017'][x]['team']:
                         try:
                             temp['players'][i][x] = player_stats['2016'][x]
                         except KeyError:
                             temp['players'][i][x] = pd.Series({'team' : player_stats['2017'][x]['team']})
-            elif (counter == 3):
+            elif (counter == 4):
                 for x in player_stats['2018'].keys():
                     if temp['home_team'][i] == player_stats['2018'][x]['team'] or temp['away_team'][i] == player_stats['2018'][x]['team']:
                         try:
@@ -101,6 +110,7 @@ def process_gamedata():
 
 #gather all seasonal player-stats and store them by player
 def process_playerdata():
+    stats_2013 = pd.read_json('./data/player_stats_2012_2013.json')
     stats_2014 = pd.read_json('./data/player_stats_2013_2014.json')
     stats_2015 = pd.read_json('./data/player_stats_2014_2015.json')
     stats_2016 = pd.read_json('./data/player_stats_2015_2016.json')
@@ -108,12 +118,15 @@ def process_playerdata():
     stats_2018 = pd.read_json('./data/player_stats_2017_2018.json')
     
     player_stats = {}
+    player_stats['2013'] = {}
     player_stats['2014'] = {}
     player_stats['2015'] = {}
     player_stats['2016'] = {}
     player_stats['2017'] = {}
     player_stats['2018'] = {}
     
+    for x in range(len(stats_2013)):
+        player_stats['2013'][stats_2013['name'][x]] = stats_2013.loc[x]
     for x in range(len(stats_2014)):
         player_stats['2014'][stats_2014['name'][x]] = stats_2014.loc[x]
     for x in range(len(stats_2015)):
@@ -132,12 +145,22 @@ def unique_players():
     player_data = process_playerdata()
     uniq_players = {None}
     set(uniq_players)
-    years = ['2015', '2016', '2017', '2018']
+    years = ['2013','2014','2015', '2016', '2017', '2018']
     for i in years:
         for x in player_data[i].keys():
             uniq_players.add(x)
     
     return uniq_players
+
+def unique_teams(merged_data):
+    uniq_teams = {None}
+    set(uniq_teams)
+    for i in range(len(merged_data)):
+        uniq_teams.add(merged_data['home_team'][i])
+        
+    uniq_teams.remove(None)
+    return uniq_teams
+
 
 def create_playerarray():
     merged_data, uniq_players = process_gamedata(), unique_players()
@@ -151,11 +174,11 @@ def create_playerarray():
     for i in range(len(merged_data)):
         print("2nd", i)
         if merged_data['home_team_score'][i] > merged_data['away_team_score'][i]:
-            merged_data['win'][i] = 1
+            merged_data['win'][i] = 1           
         else:
             merged_data['win'][i] = 0
         temp_home = {}
-        temp_away = {}
+        temp_away = {}  
         for x in uniq_players:
             temp_home[x] = 0
             temp_away[x] = 0
@@ -173,6 +196,6 @@ def create_playerarray():
 
 
 if __name__ == "__main__":
-    create_playerarray().to_json('./data/merged_data.json')
+    #create_playerarray().to_json('./data/merged_data.json')
     print('test')
-    
+
