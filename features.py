@@ -12,12 +12,12 @@ import os
 import glob
 import datetime
 from datetime import timedelta
-import sklearn as sk
+import sklearn as ska 
 
-def field_goal(merged_data, uniq_players):
-    merged_data['field_goal_array_home'] = None
-    merged_data['field_goal_array_away'] = None
-    merged_data['field_goal_array'] = None
+def usage_percentage(merged_data, uniq_players):
+    merged_data['usage_percentage_array_home'] = None
+    merged_data['usage_percentage_array_away'] = None
+    merged_data['usage_percentage_array'] = None
         
     for i in range(len(merged_data)):
         print(i)
@@ -30,19 +30,76 @@ def field_goal(merged_data, uniq_players):
                 if y == x:
                     if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
                         try:
-                            temp_home[x] = (merged_data['players'][i][y]['made_field_goals'] / merged_data['players'][i][y]['attempted_field_goals']) * 100
+                            temp_home[x] = merged_data['players'][i][y]['usage_percentage'] 
                         except:
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_away[x] = (merged_data['players'][i][y]['made_field_goals'] / merged_data['players'][i][y]['attempted_field_goals']) * 100
+                            temp_away[x] = merged_data['players'][i][y]['usage_percentage']
                         except:
                             temp_away[x] = 0
-        merged_data['field_goal_array_home'][i] = np.array(list(temp_home.values()))
-        merged_data['field_goal_array_away'][i] = np.array(list(temp_away.values()))
-        merged_data['field_goal_array'][i] = np.concatenate((merged_data['field_goal_array_home'][i], merged_data['field_goal_array_away'][i]))
+        merged_data['usage_percentage_array_home'][i] = np.array(list(temp_home.values()))
+        merged_data['usage_percentage_array_away'][i] = np.array(list(temp_away.values()))
+        merged_data['usage_percentage_array'][i] = np.concatenate((merged_data['usage_percentage_array_home'][i], merged_data['usage_percentage_array_away'][i]))
     return merged_data
 
+def PER(merged_data, uniq_players):
+    merged_data['PER_array_home'] = None
+    merged_data['PER_array_away'] = None
+    merged_data['PER_array'] = None
+        
+    for i in range(len(merged_data)):
+        print(i)
+        temp_home = {}
+        temp_away = {}
+        for x in uniq_players:
+            temp_home[x] = 0
+            temp_away[x] = 0
+            for y in merged_data['players'][i].keys():
+                if y == x:
+                    if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
+                        try:
+                            temp_home[x] = merged_data['players'][i][y]['player_efficiency_rating'] 
+                        except:
+                            temp_home[x] = 0
+                    elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
+                        try:
+                            temp_away[x] = merged_data['players'][i][y]['player_efficiency_rating']
+                        except:
+                            temp_away[x] = 0
+        merged_data['PER_array_home'][i] = np.array(list(temp_home.values()))
+        merged_data['PER_array_away'][i] = np.array(list(temp_away.values()))
+        merged_data['PER_array'][i] = np.concatenate((merged_data['PER_array_home'][i], merged_data['PER_array_away'][i]))
+    return merged_data
+
+def win_shares(merged_data, uniq_players):
+    merged_data['win_shares_array_home'] = None
+    merged_data['win_shares_array_away'] = None
+    merged_data['win_shares_array'] = None
+        
+    for i in range(len(merged_data)):
+        print(i)
+        temp_home = {}
+        temp_away = {}
+        for x in uniq_players:
+            temp_home[x] = 0
+            temp_away[x] = 0
+            for y in merged_data['players'][i].keys():
+                if y == x:
+                    if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
+                        try:
+                            temp_home[x] = merged_data['players'][i][y]['win_shares'] 
+                        except:
+                            temp_home[x] = 0
+                    elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
+                        try:
+                            temp_away[x] = merged_data['players'][i][y]['win_shares']
+                        except:
+                            temp_away[x] = 0
+        merged_data['win_shares_array_home'][i] = np.array(list(temp_home.values()))
+        merged_data['win_shares_array_away'][i] = np.array(list(temp_away.values()))
+        merged_data['win_shares_array'][i] = np.concatenate((merged_data['win_shares_array_home'][i], merged_data['win_shares_array_away'][i]))
+    return merged_data
 
 def blocks(merged_data, uniq_players):
     merged_data['blocks_array_home'] = None
@@ -60,12 +117,12 @@ def blocks(merged_data, uniq_players):
                 if y == x:
                     if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
                         try:
-                            temp_home[x] = merged_data['players'][i][y]['blocks'] / merged_data['players'][i][y]['minutes_played']
+                            temp_home[x] = merged_data['players'][i][y]['block_percentage']
                         except:
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_away[x] = merged_data['players'][i][y]['blocks'] / merged_data['players'][i][y]['minutes_played']
+                            temp_away[x] = merged_data['players'][i][y]['block_percentage']
                         except:
                             temp_away[x] = 0
         merged_data['blocks_array_home'][i] = np.array(list(temp_home.values()))
@@ -91,12 +148,12 @@ def assists(merged_data, uniq_players):
                 if y == x:
                     if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
                         try:
-                            temp_home[x] = merged_data['players'][i][y]['assists'] / merged_data['players'][i][y]['minutes_played']
+                            temp_home[x] = merged_data['players'][i][y]['assist_percentage']
                         except:
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_away[x] = merged_data['players'][i][y]['assists'] / merged_data['players'][i][y]['minutes_played']
+                            temp_away[x] = merged_data['players'][i][y]['assist_percentage']
                         except:
                             temp_away[x] = 0
         merged_data['assists_array_home'][i] = np.array(list(temp_home.values()))
@@ -122,11 +179,13 @@ def minutes_played(merged_data, uniq_players):
                         try:
                             temp_home[x] = merged_data['players'][i][y]['minutes_played']
                         except:
+                            print("except")
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
                             temp_away[x] = merged_data['players'][i][y]['minutes_played'] 
                         except:
+                            print("except")
                             temp_away[x] = 0
         merged_data['minutes_played_array_home'][i] = np.array(list(temp_home.values()))
         merged_data['minutes_played_array_away'][i] = np.array(list(temp_away.values()))
@@ -157,7 +216,7 @@ def points(merged_data, uniq_players):
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_home[x] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
+                            temp_away[x] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
                                      merged_data['players'][i][y]['made_three_point_field_goals'],
                                      merged_data['players'][i][y]['made_free_throws'] ) / merged_data['players'][i][y]['games_played']
                         except:
@@ -189,14 +248,16 @@ def efg(merged_data, uniq_players):
                                      merged_data['players'][i][y]['attempted_field_goals']
                                       )
                         except:
+                            print('landed in except')
                             temp_home[x] = 0
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_home[x] = compute_efg(merged_data['players'][i][y]['made_field_goals'], 
+                            temp_away[x] = compute_efg(merged_data['players'][i][y]['made_field_goals'], 
                                      merged_data['players'][i][y]['made_three_point_field_goals'],
                                      merged_data['players'][i][y]['attempted_field_goals']
                                      )
                         except:
+                            print('landed in except away')
                             temp_away[x] = 0
         merged_data['efg_array_home'][i] = np.array(list(temp_home.values()))
         merged_data['efg_array_away'][i] = np.array(list(temp_away.values()))
@@ -232,19 +293,51 @@ def player_stats(merged_data, uniq_players):
                             temp_home[x] = [1,0,0,0]
                     elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
                         try:
-                            temp_home[x][0] = 1
-                            temp_home[x][1] = compute_efg(merged_data['players'][i][y]['made_field_goals'], 
+                            temp_away[x][0] = 1
+                            temp_away[x][1] = compute_efg(merged_data['players'][i][y]['made_field_goals'], 
                                      merged_data['players'][i][y]['made_three_point_field_goals'],
                                      merged_data['players'][i][y]['attempted_field_goals'])
-                            temp_home[x][2] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
+                            temp_away[x][2] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
                                      merged_data['players'][i][y]['made_three_point_field_goals'],
                                      merged_data['players'][i][y]['made_free_throws'] ) / merged_data['players'][i][y]['games_played']
-                            temp_home[x][3] = merged_data['players'][i][y]['minutes_played']
+                            temp_away[x][3] = merged_data['players'][i][y]['minutes_played']
                         except:
                             temp_away[x] = [1,0,0,0]
         merged_data['stats_array_home'][i] = np.array(list(temp_home.values()))
         merged_data['stats_array_away'][i] = np.array(list(temp_away.values()))
         merged_data['stats_array'][i] = np.concatenate((merged_data['stats_array_home'][i], merged_data['stats_array_away'][i]))
+    return merged_data
+
+def points_end(merged_data, uniq_players):
+    merged_data['pointsend_array_home'] = None
+    merged_data['pointsend_array_away'] = None
+    merged_data['pointsend_array'] = None
+        
+    for i in range(len(merged_data)):
+        print(i)
+        temp_home = np.array([0,0])
+        temp_away = np.array([0,0])
+        for y in merged_data['players'][i].keys():
+            if merged_data['players'][i][y]['team'] == merged_data['home_team'][i]:
+                try:
+                    temp_home[0] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
+                             merged_data['players'][i][y]['made_three_point_field_goals'],
+                             merged_data['players'][i][y]['made_free_throws'] ) / merged_data['players'][i][y]['games_played']
+                    temp_home[1] = compute_efg(merged_data['players'][i][y]['made_field_goals'], 
+                                     merged_data['players'][i][y]['made_three_point_field_goals'],
+                                     merged_data['players'][i][y]['attempted_field_goals'])
+                except:
+                    temp_home[x] = 0
+            elif merged_data['players'][i][y]['team'] == merged_data['away_team'][i]:
+                try:
+                    temp_away[x] = compute_points(merged_data['players'][i][y]['made_field_goals'], 
+                             merged_data['players'][i][y]['made_three_point_field_goals'],
+                             merged_data['players'][i][y]['made_free_throws'] ) / merged_data['players'][i][y]['games_played']
+                except:
+                    temp_away[x] = 0
+        merged_data['points_array_home'][i] = np.array(list(temp_home.values()))
+        merged_data['points_array_away'][i] = np.array(list(temp_away.values()))
+        merged_data['points_array'][i] = np.concatenate((merged_data['points_array_home'][i], merged_data['points_array_away'][i]) )
     return merged_data
 
 def compute_points(FG, threeP, FT):
